@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 class HomeWidget extends StatefulWidget {
   @override
@@ -6,6 +7,24 @@ class HomeWidget extends StatefulWidget {
 }
 
 class _HomeWidgetState extends State<HomeWidget> {
+  String _buttonText = "Start";
+  String _stopwatchText = "00:00:00";
+  final _stopWatch = new Stopwatch();
+  final _timeout = const Duration(seconds: 1);
+
+  void _startTimeout() {
+    new Timer(_timeout, _handleTimeout);
+  }
+
+  void _handleTimeout() {
+    if (_stopWatch.isRunning) {
+      _startTimeout();
+    }
+    setState(() {
+      _setStopwatchText();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,29 +40,59 @@ class _HomeWidgetState extends State<HomeWidget> {
           child: Column(
             children: [
               RaisedButton(
-                onPressed: () {},
-                child: Text("start"),
+                onPressed: _startStopButtonPressed,
+                child: Text(_buttonText),
               ),
               RaisedButton(
-                onPressed: () {},
+                onPressed: _resetButtonPressed,
                 child: Text("Reset"),
               ),
             ],
           ),
         ),
         Expanded(
-          //1
           child: FittedBox(
             fit: BoxFit.none,
             child: Text(
-              "00:00:00",
+              _stopwatchText,
               style: TextStyle(
-                fontSize: 72, //2
+                fontSize: 72,
               ),
             ),
           ),
         ),
       ],
     );
+  }
+
+  void _startStopButtonPressed() {
+    setState(() {
+      if (_stopWatch.isRunning) {
+        _buttonText = "Start";
+        _stopWatch.stop();
+      } else {
+        _buttonText = "Stop";
+        _stopWatch.start();
+        _startTimeout();
+      }
+    });
+  }
+
+  void _resetButtonPressed() {
+    if (_stopWatch.isRunning) {
+      _startStopButtonPressed();
+    }
+    setState(() {
+      _stopWatch.reset();
+      _setStopwatchText();
+    });
+  }
+
+  void _setStopwatchText() {
+    _stopwatchText = _stopWatch.elapsed.inHours.toString().padLeft(2, "0") +
+        ":" +
+        (_stopWatch.elapsed.inMinutes % 60).toString().padLeft(2, "0") +
+        ":" +
+        (_stopWatch.elapsed.inSeconds % 60).toString().padLeft(2, "0");
   }
 }
